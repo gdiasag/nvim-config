@@ -4,6 +4,7 @@ return {
     dependencies = {
       "jbyuki/instant.nvim",
     },
+
     config = function()
       vim.g.instant_username = "your-username"
       require("live-share").setup({

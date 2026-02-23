@@ -24,12 +24,9 @@ return { -- LSP Configuration & Plugins
           map("gr", require("telescope.builtin").lsp_references)
           -- Jump to implementation.
           map("gI", require("telescope.builtin").lsp_implementations)
-          -- Fuzzy find all the symbols in your current document.
-          --  Symbols are things like variables, functions, types, etc.
+          -- Fuzzy find symbols in current document.
           map("<leader>ds", require("telescope.builtin").lsp_document_symbols)
-
-          -- Fuzzy find all the symbols in your current workspace.
-          --  Similar to document symbols, except searches over your entire project.
+          -- Fuzzy find symbols in workspace.
           map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols)
           -- Rename variable.
           map("<leader>rn", vim.lsp.buf.rename)
@@ -52,9 +49,24 @@ return { -- LSP Configuration & Plugins
 
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
+      capabilities.textDocument.completion.completionItem.snippetSupport = true
 
       -- Enable the following language servers
       local servers = {
+        nixd = {
+          manual_install = true,
+          nixpkgs = {
+            -- For flake.
+            -- This expression will be interpreted as "nixpkgs" toplevel
+            -- Nixd provides package, lib completion/information from it.
+            -- Resource Usage: Entries are lazily evaluated, entire nixpkgs takes 200~300MB for just "names".
+            -- Package documentation, versions, are evaluated by-need.
+            expr = "import (builtins.getFlake(toString ./.)).inputs.nixpkgs {}",
+          },
+        },
+        clangd = {
+          filetypes = { "c", "cpp" },
+        },
         ruby_lsp = {},
         rust_analyzer = {},
         lua_ls = {
@@ -92,8 +104,10 @@ return { -- LSP Configuration & Plugins
         },
 
         hls = {
-          cmd = { "haskell-language-server-wrapper", "--lsp" },
-
+          cmd = {
+            "haskell-language-server-wrapper",
+            "--lsp",
+          },
           filetypes = { "haskell", "lhaskell", "cabal" },
         },
 
@@ -104,9 +118,24 @@ return { -- LSP Configuration & Plugins
         -- },
 
         zls = {
+          cmd = {
+            "/home/gustavodiasag/code/zig/zls/zig-out/bin/zls",
+          },
           manual_install = true,
-
-          cmd = { "/home/gustavodiasag/code/zig/zls/zig-out/bin/zls" },
+        },
+        html = {
+          cmd = {
+            "vscode-html-language-server",
+            "--stdio",
+          },
+          filetypes = { "html" },
+          init_options = {
+            configurationSection = { "html", "css", "javascript" },
+            embeddedLanguages = {
+              css = true,
+              javascript = true,
+            },
+          },
         },
       }
 

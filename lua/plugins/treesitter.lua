@@ -6,9 +6,9 @@ return {
     },
     build = ":TSUpdate",
     config = function()
-      local configs = require("nvim-treesitter.configs")
+      local config = require("nvim-treesitter.configs")
 
-      configs.setup({
+      config.setup({
         ensure_installed = {
           "ocaml",
           "rust",
@@ -22,6 +22,17 @@ return {
         highlight = { enable = true },
         indent = { enable = true },
       })
+
+      -- Custom parser configs
+      local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+
+      parser_config.cool = {
+        install_info = {
+          url = "~/code/c/tree-sitter-cool",
+          files = { "src/parser.c", "src/scanner.c" },
+        },
+        filetype = "cl",
+      }
     end,
   },
 }

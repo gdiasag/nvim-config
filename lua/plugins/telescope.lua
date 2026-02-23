@@ -25,7 +25,7 @@ return {
           },
         },
       })
-
+      --
       local builtin = require("telescope.builtin")
       -- Search help.
       vim.keymap.set("n", "<leader>h", builtin.help_tags, {})
@@ -33,10 +33,14 @@ return {
       vim.keymap.set("n", "<leader><leader>", builtin.find_files, {})
       -- Search by grep.
       vim.keymap.set("n", "<leader>?", builtin.live_grep, {})
-      -- Search diagnostics.
-      vim.keymap.set("n", "<leader>d", builtin.diagnostics, {})
       -- Search git modifications.
       vim.keymap.set("n", "<leader>g", builtin.git_status, {})
+
+      -- LSP functionalities.
+
+      -- Search diagnostics.
+      vim.keymap.set("n", "<leader>d", builtin.diagnostics, {})
+
       -- Fuzzily seach in current buffer.
       vim.keymap.set("n", "<leader>/", function()
         builtin.current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
