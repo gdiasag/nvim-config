@@ -13,6 +13,8 @@ vim.g.loaded_netrwPlugin = 1
 local o = vim.opt
 
 o.completeopt = "menu,menuone,noselect"
+-- Remap clipboard support
+o.clipboard = "unnamedplus"
 -- Enable highlighting of the current line.
 o.cursorline = true
 -- Use spaces instead of tabs.
