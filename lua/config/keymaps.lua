@@ -33,10 +33,6 @@ keymap("n", "L", ":tabnext<CR>")
 -- Go to previous tab
 keymap("n", "H", ":tabprev<CR>")
 
--- Clipboard integration
-keymap("n", "<leader>c", "<cmd>w !fish_clipboard_copy<CR><CR>") -- Copy buffer into clipboard
-keymap("n", "<leader>p", "<cmd>read !fish_clipboard_paste<CR>") -- Paste clipboard into buffer
-
 -- Open terminal at the bottom of the screen with a fixed height.
 keymap("n", "<leader>st", function()
   vim.cmd.new()

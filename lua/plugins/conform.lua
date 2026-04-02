@@ -10,9 +10,17 @@ return {
           rust = { "rustfmt" },
           racket = { "raco fmt" },
           ruby = { "rubyfmt" },
+          python = { "black" },
         },
 
         formatters = {
+          black = {
+            prepend_args = {
+              "--fast",
+              "--line-length",
+              "80",
+            },
+          },
           ocamlformat = {
             prepend_args = {
               "--if-then-else",

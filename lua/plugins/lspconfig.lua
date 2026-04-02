@@ -53,6 +53,8 @@ return { -- LSP Configuration & Plugins
 
       -- Enable the following language servers
       local servers = {
+        basedpyright = {},
+        -- prolog_ls = {},
         nixd = {
           manual_install = true,
           nixpkgs = {
