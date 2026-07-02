@@ -42,7 +42,7 @@ o.spell = false
 -- Spell checking will be done for the below languages.
 o.spelllang = { "en_us" }
 -- Set light theme
-o.background = "light"
+o.background = "dark"
 -- True color support.
 o.termguicolors = true
 -- Save undo history to an undo file.

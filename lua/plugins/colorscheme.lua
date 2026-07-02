@@ -1,10 +1,10 @@
 return {
   {
-    "slugbyte/lackluster.nvim",
+    "savq/melange-nvim",
     lazy = false,
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme("lackluster")
+      vim.cmd.colorscheme("melange")
     end,
   },
 }
