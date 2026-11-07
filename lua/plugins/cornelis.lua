@@ -8,7 +8,10 @@ return {
 
     name = "cornelis",
     ft = "agda",
-    build = "stack install",
     version = "*",
+    init = function()
+      -- The cornelis binary is provided by Nix instead of `stack install`.
+      vim.g.cornelis_use_global_binary = 1
+    end,
   },
 }

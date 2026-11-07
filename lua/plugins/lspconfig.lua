@@ -1,11 +1,10 @@
 return { -- LSP Configuration & Plugins
   {
     "neovim/nvim-lspconfig",
+    -- Language servers are not installed from Neovim: global ones come from
+    -- Home Manager (~/nix-config/home/neovim.nix), project ones from the
+    -- project's dev shell. nvim-lspconfig only supplies default server configs.
     dependencies = {
-      -- Automatically install LSPs and related tools to stdpath for Neovim
-      { "williamboman/mason.nvim", config = true },
-      { "williamboman/mason-lspconfig.nvim" },
-      { "WhoIsSethDaniel/mason-tool-installer.nvim" },
       { "jubnzv/virtual-types.nvim" },
     },
     config = function()
@@ -39,7 +38,7 @@ return { -- LSP Configuration & Plugins
 
           -- Inlay hints
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
             map("<leader>ih", function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
             end)
@@ -56,14 +55,19 @@ return { -- LSP Configuration & Plugins
         basedpyright = {},
         -- prolog_ls = {},
         nixd = {
-          manual_install = true,
-          nixpkgs = {
-            -- For flake.
-            -- This expression will be interpreted as "nixpkgs" toplevel
-            -- Nixd provides package, lib completion/information from it.
-            -- Resource Usage: Entries are lazily evaluated, entire nixpkgs takes 200~300MB for just "names".
-            -- Package documentation, versions, are evaluated by-need.
-            expr = "import (builtins.getFlake(toString ./.)).inputs.nixpkgs {}",
+          settings = {
+            nixd = {
+              -- <nixpkgs> is pinned by Home Manager to the config flake's nixpkgs input.
+              nixpkgs = { expr = "import <nixpkgs> { }" },
+              formatting = { command = { "nixfmt" } },
+              options = {
+                home_manager = {
+                  expr = '(builtins.getFlake "'
+                    .. vim.env.HOME
+                    .. '/nix-config").homeConfigurations."gustavodiasag@pop-os".options',
+                },
+              },
+            },
           },
         },
         clangd = {
@@ -85,8 +89,6 @@ return { -- LSP Configuration & Plugins
           },
         },
         ocamllsp = {
-          manual_install = true,
-
           cmd = { "ocamllsp" },
 
           settings = {
@@ -123,7 +125,6 @@ return { -- LSP Configuration & Plugins
           cmd = {
             "/home/gustavodiasag/code/zig/zls/zig-out/bin/zls",
           },
-          manual_install = true,
         },
         html = {
           cmd = {
@@ -141,52 +142,14 @@ return { -- LSP Configuration & Plugins
         },
       }
 
-      -- Removes definitions of installations that were set up to be manual.
-      local servers_to_install = vim.tbl_filter(function(key)
-        local t = servers[key]
-        if type(t) == "table" then
-          return not t.manual_install
-        else
-          return t
-        end
-      end, vim.tbl_keys(servers))
+      vim.lsp.config("*", { capabilities = capabilities })
 
-      -- Ensure the servers and tools above are installed
-      require("mason").setup()
-
-      local ensure_installed = {
-        "stylua",
-        "lua_ls",
-      }
-
-      vim.list_extend(ensure_installed, servers_to_install)
-      require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
-
-      local lspconfig = require("lspconfig")
-
+      -- Servers whose executable is not on PATH (e.g. outside the matching dev
+      -- shell) are simply not started.
       for name, config in pairs(servers) do
-        if config == true then
-          config = {}
-        end
-        config = vim.tbl_deep_extend("force", {}, {
-          capabilities = capabilities,
-        }, config)
-
-        lspconfig[name].setup(config)
+        vim.lsp.config(name, config)
+        vim.lsp.enable(name)
       end
-
-      -- require("mason-lspconfig").setup({
-      --   handlers = {
-      --     function(server_name)
-      --       local server = servers[server_name] or {}
-      --       -- This handles overriding only values explicitly passed
-      --       -- by the server configuration above. Useful when disabling
-      --       -- certain features of an LSP (for example, turning off formatting for tsserver)
-      --       server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-      --       require("lspconfig")[server_name].setup(server)
-      --     end,
-      --   },
-      -- })
     end,
   },
 }
