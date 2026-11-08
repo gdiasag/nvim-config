@@ -6,7 +6,8 @@ return {
     },
 
     config = function()
-      vim.g.instant_username = "your-username"
+      -- The name collaborators see next to your cursor.
+      vim.g.instant_username = vim.env.USER
       require("live-share").setup({
         port_internal = 8765,
         max_attempts = 40, -- 10 seconds
