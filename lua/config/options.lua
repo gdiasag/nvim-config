@@ -49,6 +49,8 @@ o.termguicolors = true
 o.undofile = true
 -- Disable line wrap.
 o.wrap = false
+-- Keep a number of lines visible above/below cursor when scrolling.
+o.scrolloff = 8
 -- Colored column.
 o.colorcolumn = "80"
 -- Custom tabline configuration.
