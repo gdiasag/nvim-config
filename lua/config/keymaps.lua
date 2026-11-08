@@ -36,4 +36,3 @@ map("n", "<leader>st", function()
   vim.wo.winfixheight = true
   vim.cmd.terminal()
 end, { desc = "Open terminal at the bottom" })
-map("t", "<leader>xt", "<C-\\><C-n>", { desc = "Exit terminal mode" })
