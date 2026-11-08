@@ -1,38 +1,47 @@
 return {
   {
+    -- The `main` branch is the rewrite for Neovim 0.12+; `master` is frozen at 0.11.
     "nvim-treesitter/nvim-treesitter",
-    dependencies = {
-      { "nvim-treesitter/nvim-treesitter-textobjects" }, -- Syntax aware text-objects.
-    },
+    branch = "main",
+    lazy = false, -- `main` does not support lazy-loading.
     build = ":TSUpdate",
     config = function()
-      local config = require("nvim-treesitter.configs")
-
-      config.setup({
-        ensure_installed = {
-          "ocaml",
-          "rust",
-          "haskell",
-          "racket",
-          "typescript",
-          "zig",
-          "ruby",
-        },
-        sync_install = false,
-        highlight = { enable = true },
-        indent = { enable = true },
+      -- Local grammar for COOL (filetype `cool`, see lua/config/filetype.lua).
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "TSUpdate",
+        callback = function()
+          require("nvim-treesitter.parsers").cool = {
+            install_info = { path = "~/code/c/tree-sitter-cool" },
+          }
+        end,
       })
 
-      -- Custom parser configs
-      local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+      -- No-op for parsers that are already installed.
+      require("nvim-treesitter").install({
+        "cool",
+        "haskell",
+        "ocaml",
+        "racket",
+        "ruby",
+        "rust",
+        "typescript",
+        "zig",
+      })
 
-      parser_config.cool = {
-        install_info = {
-          url = "~/code/c/tree-sitter-cool",
-          files = { "src/parser.c", "src/scanner.c" },
-        },
-        filetype = "cl",
-      }
+      -- Highlighting for every filetype that has a parser, and indentation
+      -- where the language ships an indents query.
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("treesitter", { clear = true }),
+        callback = function(args)
+          local lang = vim.treesitter.language.get_lang(vim.bo[args.buf].filetype)
+          if not (lang and pcall(vim.treesitter.start, args.buf, lang)) then
+            return
+          end
+          if vim.treesitter.query.get(lang, "indents") then
+            vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
+      })
     end,
   },
 }
