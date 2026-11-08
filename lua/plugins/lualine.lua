@@ -1,19 +1,14 @@
 return {
   {
     "nvim-lualine/lualine.nvim",
-    requires = { "nvim-tree/nvim-web-devicons", opt = true },
-    config = function()
-      require("lualine").setup({
-        options = {
-          icons_enabled = true,
-          theme = "lackluster",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    -- The default theme, "auto", loads the colorscheme's own lualine theme.
+    opts = {
+      sections = {
+        lualine_c = {
+          { "filename", path = 1 },
         },
-        sections = {
-          lualine_c = {
-            { "filename", path = 1 },
-          },
-        },
-      })
-    end,
+      },
+    },
   },
 }
