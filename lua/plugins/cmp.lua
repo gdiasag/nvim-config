@@ -3,19 +3,17 @@ return {
     "hrsh7th/nvim-cmp",
     event = "InsertEnter",
     dependencies = {
-      { "hrsh7th/cmp-nvim-lsp" },
-      { "hrsh7th/cmp-path" },
-      { "L3MON4D3/LuaSnip" },
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-path",
     },
     config = function()
       local cmp = require("cmp")
-      local luasnip = require("luasnip")
-      luasnip.config.setup({})
 
       cmp.setup({
+        -- LSP snippets expand through Neovim's built-in vim.snippet.
         snippet = {
           expand = function(args)
-            luasnip.lsp_expand(args.body)
+            vim.snippet.expand(args.body)
           end,
         },
         completion = { completeopt = "menu,menuone,noinsert" },
@@ -30,23 +28,22 @@ return {
           ["<C-f>"] = cmp.mapping.scroll_docs(4),
           -- Accept the completion.
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
-          -- <c-l> will move you to the right of each of the expansion locations.
+          -- <C-l> moves to the next placeholder of the active snippet.
           ["<C-l>"] = cmp.mapping(function()
-            if luasnip.expand_or_locally_jumpable() then
-              luasnip.expand_or_jump()
+            if vim.snippet.active({ direction = 1 }) then
+              vim.snippet.jump(1)
             end
           end, { "i", "s" }),
-          -- <c-h> is similar, except moving you backwards.
+          -- <C-h> moves to the previous one.
           ["<C-h>"] = cmp.mapping(function()
-            if luasnip.locally_jumpable(-1) then
-              luasnip.jump(-1)
+            if vim.snippet.active({ direction = -1 }) then
+              vim.snippet.jump(-1)
             end
           end, { "i", "s" }),
         }),
 
         sources = {
           { name = "nvim_lsp" },
-          { name = "luasnip" },
           { name = "path" },
         },
       })
