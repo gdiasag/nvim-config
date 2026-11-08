@@ -1,20 +1,16 @@
--- Auto formatting.
-vim.g.autoformat = true
--- Supress deprecation warnings.
-vim.g.deprecation_warnings = false
--- Whether a Nerd Font is installed and selected in the terminal.
-vim.g.have_nerd_font = true
--- Fix markdown indentation settings.
-vim.g.markdown_recommended_style = 0
--- Disable netwr.
+-- Disable netrw, nvim-tree replaces it.
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
+-- Format on save (lua/plugins/conform.lua). `:let g:autoformat = v:false` pauses it.
+vim.g.autoformat = true
+-- Keep these indentation settings in markdown buffers.
+vim.g.markdown_recommended_style = 0
 
-local o = vim.opt
+local o = vim.o
 
-o.completeopt = "menu,menuone,noselect"
--- Remap clipboard support
+-- Use the system clipboard for all yanks, deletes and puts.
 o.clipboard = "unnamedplus"
+o.completeopt = "menu,menuone,noselect"
 -- Enable highlighting of the current line.
 o.cursorline = true
 -- Use spaces instead of tabs.
@@ -25,80 +21,41 @@ o.smartindent = true
 o.tabstop = 2
 -- Size of an indent.
 o.shiftwidth = 2
+-- Round indent to a multiple of 'shiftwidth'.
+o.shiftround = true
 -- Wrap lines at convenient points.
 o.linebreak = true
--- Enable mouse mode.
+-- Disable line wrap.
+o.wrap = false
+-- Enable the mouse in all modes.
 o.mouse = "a"
--- Print line number.
+-- Absolute number on the cursor line, relative numbers elsewhere.
 o.number = true
--- Relatieve line numbers.
 o.relativenumber = true
--- Round indent.
-o.shiftround = true
 -- Always show the signcolumn, otherwise it would shift the text each time.
 o.signcolumn = "yes"
--- Enable spell checking.
-o.spell = false
--- Spell checking will be done for the below languages.
-o.spelllang = { "en_us" }
--- Set light theme
+-- Language used when spell checking is turned on.
+o.spelllang = "en_us"
+-- Use the dark variant of the colorscheme.
 o.background = "dark"
 -- True color support.
 o.termguicolors = true
 -- Save undo history to an undo file.
 o.undofile = true
--- Disable line wrap.
-o.wrap = false
 -- Keep a number of lines visible above/below cursor when scrolling.
 o.scrolloff = 8
 -- Colored column.
 o.colorcolumn = "80"
--- Custom tabline configuration.
-o.tabline = "%!v:lua.MyTabLine()"
+-- Label tabs with the file name of their focused window (lua/config/tabline.lua).
+o.tabline = "%!v:lua.require'config.tabline'.render()"
 
--- Highlight when yanking (copying) text.
-vim.api.nvim_create_autocmd("TextYankPost", {
-  pattern = "*",
-  command = "silent! lua vim.highlight.on_yank({ timeout = 200 })",
-})
-
--- Jump to last edit position on opening file.
-vim.api.nvim_create_autocmd("BufReadPost", {
-  pattern = "*",
-  callback = function(_)
-    if vim.fn.line("'\"") > 1 and vim.fn.line("'\"") <= vim.fn.line("$") then
-      -- Except for in git commit messages:
-      -- https://stackoverflow.com/questions/31449496/vim-ignore-specifc-file-in-autocommand
-      if not vim.fn.expand("%:p"):find(".git", 1, true) then
-        vim.cmd('exe "normal! g\'\\""')
+vim.diagnostic.config({
+  jump = {
+    -- Show the diagnostic that [d and ]d jump to in a float.
+    on_jump = function(diagnostic, bufnr)
+      if diagnostic then
+        vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
       end
-    end
-  end,
+    end,
+  },
 })
-
--- Custom tabline configuration.
-function MyTabLine()
-  local s = ""
-  for i = 1, vim.fn.tabpagenr("$") do
-    -- Select the highlighting
-    if i == vim.fn.tabpagenr() then
-      s = s .. "%#TabLineSel#"
-    else
-      s = s .. "%#TabLine#"
-    end
-    -- Set the tab page number
-    s = s .. "%" .. i .. "T"
-
-    -- Display just the filename (not full path)
-    local buflist = vim.fn.tabpagebuflist(i)
-    local winnr = vim.fn.tabpagewinnr(i)
-    local filename = vim.fn.fnamemodify(vim.fn.bufname(buflist[winnr]), ":t")
-    if filename == "" then
-      filename = "[No Name]"
-    end
-    s = s .. " " .. filename .. " "
-  end
-  -- Fill the rest of the tabline with TabLineFill and reset tab page nr
-  s = s .. "%#TabLineFill#%T"
-  return s
-end
