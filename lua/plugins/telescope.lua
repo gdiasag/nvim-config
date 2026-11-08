@@ -1,19 +1,35 @@
 return {
   { -- Fuzzy Finder (files, lsp, etc)
     "nvim-telescope/telescope.nvim",
-    branch = "0.1.x",
+    version = "*",
+    cmd = "Telescope",
     dependencies = {
-      { "nvim-lua/plenary.nvim" },
+      "nvim-lua/plenary.nvim",
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    },
+    keys = {
+      { "<leader>h", "<Cmd>Telescope help_tags<CR>", desc = "Search help" },
+      { "<leader><leader>", "<Cmd>Telescope find_files<CR>", desc = "Search files" },
+      { "<leader>?", "<Cmd>Telescope live_grep<CR>", desc = "Search by grep" },
+      { "<leader>g", "<Cmd>Telescope git_status<CR>", desc = "Search git changes" },
+      { "<leader>d", "<Cmd>Telescope diagnostics<CR>", desc = "Search diagnostics" },
       {
-        "nvim-telescope/telescope-fzf-native.nvim",
-        build = "make",
-        enabled = true,
+        "<leader>/",
+        function()
+          local themes = require("telescope.themes")
+          require("telescope.builtin").current_buffer_fuzzy_find(themes.get_dropdown({
+            winblend = 10,
+            previewer = false,
+          }))
+        end,
+        desc = "Fuzzily search in current buffer",
       },
     },
     config = function()
+      local telescope = require("telescope")
       local actions = require("telescope.actions")
 
-      require("telescope").setup({
+      telescope.setup({
         defaults = {
           layout_config = { prompt_position = "top" },
           sorting_strategy = "ascending",
@@ -25,29 +41,7 @@ return {
           },
         },
       })
-      --
-      local builtin = require("telescope.builtin")
-      -- Search help.
-      vim.keymap.set("n", "<leader>h", builtin.help_tags, {})
-      -- Search files.
-      vim.keymap.set("n", "<leader><leader>", builtin.find_files, {})
-      -- Search by grep.
-      vim.keymap.set("n", "<leader>?", builtin.live_grep, {})
-      -- Search git modifications.
-      vim.keymap.set("n", "<leader>g", builtin.git_status, {})
-
-      -- LSP functionalities.
-
-      -- Search diagnostics.
-      vim.keymap.set("n", "<leader>d", builtin.diagnostics, {})
-
-      -- Fuzzily seach in current buffer.
-      vim.keymap.set("n", "<leader>/", function()
-        builtin.current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
-          winblend = 10,
-          previewer = false,
-        }))
-      end, {})
+      telescope.load_extension("fzf")
     end,
   },
 }
