@@ -1,59 +1,69 @@
-return { -- LSP Configuration & Plugins
+return {
   {
     "neovim/nvim-lspconfig",
     -- Language servers are not installed from Neovim: global ones come from
     -- Home Manager (~/nix-config/home/neovim.nix), project ones from the
     -- project's dev shell. nvim-lspconfig only supplies default server configs.
-    dependencies = {
-      { "jubnzv/virtual-types.nvim" },
-    },
     config = function()
-      -- Configures the current buffer when a file associated with an lsp is opened,.
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),
         callback = function(event)
-          -- Defines mappings specific for LSP related items.
-          local map = function(keys, func)
-            vim.keymap.set("n", keys, func, {})
+          local function map(keys, rhs, desc)
+            vim.keymap.set("n", keys, rhs, { buf = event.buf, desc = desc })
           end
 
-          -- Jump to definition.
-          map("gd", require("telescope.builtin").lsp_definitions)
-          -- Find references.
-          map("gr", require("telescope.builtin").lsp_references)
-          -- Jump to implementation.
-          map("gI", require("telescope.builtin").lsp_implementations)
-          -- Fuzzy find symbols in current document.
-          map("<leader>ds", require("telescope.builtin").lsp_document_symbols)
-          -- Fuzzy find symbols in workspace.
-          map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols)
-          -- Rename variable.
-          map("<leader>rn", vim.lsp.buf.rename)
-          -- Execute a code action.
-          map("<leader>ca", vim.lsp.buf.code_action)
-          -- Display documentation.
-          map("K", vim.lsp.buf.hover)
-          -- Jump to declaration.
-          map("gD", vim.lsp.buf.declaration)
+          -- Neovim also maps grn, gra, gri, grt and gO (see `:help lsp-defaults`).
+          map("gd", "<Cmd>Telescope lsp_definitions<CR>", "Go to definition")
+          map("gr", "<Cmd>Telescope lsp_references<CR>", "Find references")
+          map("gI", "<Cmd>Telescope lsp_implementations<CR>", "Go to implementation")
+          map("gD", vim.lsp.buf.declaration, "Go to declaration")
+          map("<leader>ds", "<Cmd>Telescope lsp_document_symbols<CR>", "Search document symbols")
+          map("<leader>ws", "<Cmd>Telescope lsp_dynamic_workspace_symbols<CR>", "Search workspace symbols")
+          map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+          map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+          -- Neovim only maps K to hover when 'keywordprg' is unset, and the
+          -- Python, Ruby, Go and Racket ftplugins (among others) set it.
+          map("K", vim.lsp.buf.hover, "Hover documentation")
 
-          -- Inlay hints
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+          if not client then
+            return
+          end
+          if client:supports_method("textDocument/inlayHint", event.buf) then
             map("<leader>ih", function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-            end)
+            end, "Toggle inlay hints")
+          end
+          -- ocamllsp shows inferred types as code lenses (enabled in its settings below).
+          if client.name == "ocamllsp" then
+            vim.lsp.codelens.enable(true, { bufnr = event.buf })
           end
         end,
       })
 
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
-      capabilities.textDocument.completion.completionItem.snippetSupport = true
+      -- Neovim merges these into its own default client capabilities.
+      vim.lsp.config("*", { capabilities = require("cmp_nvim_lsp").default_capabilities() })
 
-      -- Enable the following language servers
+      -- Servers whose executable is not on PATH (e.g. outside the matching dev
+      -- shell) are simply not started.
       local servers = {
         basedpyright = {},
-        -- prolog_ls = {},
+        clangd = {
+          filetypes = { "c", "cpp" },
+        },
+        hls = {
+          filetypes = { "haskell", "lhaskell", "cabal" },
+        },
+        html = {},
+        lua_ls = {
+          -- Neovim API types come from lazydev.nvim (lua/plugins/lazydev.lua).
+          settings = {
+            Lua = {
+              completion = { callSnippet = "Replace" },
+              diagnostics = { disable = { "missing-fields" } },
+            },
+          },
+        },
         nixd = {
           settings = {
             nixd = {
@@ -70,82 +80,25 @@ return { -- LSP Configuration & Plugins
             },
           },
         },
-        clangd = {
-          filetypes = { "c", "cpp" },
-        },
-        ruby_lsp = {},
-        rust_analyzer = {},
-        lua_ls = {
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = "Replace",
-              },
-              diagnostics = {
-                disable = { "missing-fields" },
-                globals = { "vim" },
-              },
-            },
-          },
-        },
         ocamllsp = {
-          cmd = { "ocamllsp" },
-
           settings = {
             codelens = { enable = true },
             inlayHints = { enable = true },
             syntaxDocumentation = { enable = true },
           },
-
-          filetypes = {
-            "ocaml",
-            "ocaml.menhir",
-            "ocaml.interface",
-            "ocaml.ocamllex",
-            "reason",
-            "dune",
-          },
         },
-
-        hls = {
-          cmd = {
-            "haskell-language-server-wrapper",
-            "--lsp",
-          },
-          filetypes = { "haskell", "lhaskell", "cabal" },
-        },
-
+        -- prolog_ls = {},
         -- racket_langserver = {
         --   cmd = { "racket", "--lib", "racket-langserver" },
-        --
         --   filetypes = { "racket", "scheme" },
         -- },
-
+        ruby_lsp = {},
+        rust_analyzer = {},
         zls = {
-          cmd = {
-            "/home/gustavodiasag/code/zig/zls/zig-out/bin/zls",
-          },
-        },
-        html = {
-          cmd = {
-            "vscode-html-language-server",
-            "--stdio",
-          },
-          filetypes = { "html" },
-          init_options = {
-            configurationSection = { "html", "css", "javascript" },
-            embeddedLanguages = {
-              css = true,
-              javascript = true,
-            },
-          },
+          cmd = { vim.env.HOME .. "/code/zig/zls/zig-out/bin/zls" },
         },
       }
 
-      vim.lsp.config("*", { capabilities = capabilities })
-
-      -- Servers whose executable is not on PATH (e.g. outside the matching dev
-      -- shell) are simply not started.
       for name, config in pairs(servers) do
         vim.lsp.config(name, config)
         vim.lsp.enable(name)
