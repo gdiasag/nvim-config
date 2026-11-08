@@ -1,16 +1,16 @@
 return {
   {
     "uga-rosa/translate.nvim",
-    config = function()
-      vim.keymap.set("v", "<leader>t", ":Translate EN<CR>", {})
-      vim.keymap.set("n", "<leader>tw", "viw:Translate EN<CR>", {})
-
-      require("translate").setup({
-        default = {
-          command = "translate_shell",
-          output = "replace",
-        },
-      })
-    end,
+    cmd = "Translate",
+    keys = {
+      { "<leader>t", ":Translate EN<CR>", mode = "x", desc = "Translate selection to English" },
+      { "<leader>tw", "viw:Translate EN<CR>", desc = "Translate word to English" },
+    },
+    opts = {
+      default = {
+        command = "translate_shell",
+        output = "replace",
+      },
+    },
   },
 }

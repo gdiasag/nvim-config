@@ -4,7 +4,7 @@ return {
     dependencies = {
       "jbyuki/instant.nvim",
     },
-
+    cmd = { "LiveShareServer", "LiveShareJoin" },
     config = function()
       -- The name collaborators see next to your cursor.
       vim.g.instant_username = vim.env.USER
