@@ -3,7 +3,7 @@ vim.g.maplocalleader = "\\"
 
 local map = vim.keymap.set
 
-map("n", "<leader>c", function()
+map("n", "<leader>cp", function()
   vim.fn.setreg("+", vim.fn.expand("%:p"))
 end, { desc = "Copy absolute path of current buffer" })
 

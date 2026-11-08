@@ -14,7 +14,7 @@ return {
 
           -- Neovim also maps grn, gra, gri, grt and gO (see `:help lsp-defaults`).
           map("gd", "<Cmd>Telescope lsp_definitions<CR>", "Go to definition")
-          map("gr", "<Cmd>Telescope lsp_references<CR>", "Find references")
+          map("grr", "<Cmd>Telescope lsp_references<CR>", "Find references")
           map("gI", "<Cmd>Telescope lsp_implementations<CR>", "Go to implementation")
           map("gD", vim.lsp.buf.declaration, "Go to declaration")
           map("<leader>ds", "<Cmd>Telescope lsp_document_symbols<CR>", "Search document symbols")

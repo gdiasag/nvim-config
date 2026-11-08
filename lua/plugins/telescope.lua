@@ -12,7 +12,7 @@ return {
       { "<leader><leader>", "<Cmd>Telescope find_files<CR>", desc = "Search files" },
       { "<leader>?", "<Cmd>Telescope live_grep<CR>", desc = "Search by grep" },
       { "<leader>g", "<Cmd>Telescope git_status<CR>", desc = "Search git changes" },
-      { "<leader>d", "<Cmd>Telescope diagnostics<CR>", desc = "Search diagnostics" },
+      { "<leader>dd", "<Cmd>Telescope diagnostics<CR>", desc = "Search diagnostics" },
       {
         "<leader>/",
         function()
